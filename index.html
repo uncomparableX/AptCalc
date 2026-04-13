@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="description" content="A free, advanced online scientific calculator with complex numbers, matrix math, and phasors. Made by Apratim Das." />
+<meta name="keywords" content="scientific calculator, online calculator, fx-991CW, complex numbers, matrix calculator, phasor calculator, Apratim Das" />
+<meta name="author" content="Apratim Das" />
 <title>Scientific Calculator by Apratim Das</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
@@ -26,46 +30,57 @@
         justify-content: center; align-items: center; 
         min-height: 100vh; font-family: 'Segoe UI', sans-serif; 
         user-select: none; -webkit-user-select: none;
+        overflow: hidden; /* Prevents bounce on iOS */
+    }
+
+    /* Cross-platform responsive container */
+    .calc-wrapper {
+        width: 100%; height: 100%; display: flex;
+        justify-content: center; align-items: center;
     }
 
     .calculator {
-        width: 100%; max-width: 360px; height: 100vh; max-height: 720px;
-        background: var(--calc-bg); border-radius: 25px;
-        padding: 20px 15px; box-sizing: border-box;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.1);
+        width: 100%; max-width: 380px; height: 100vh; max-height: 750px;
+        background: var(--calc-bg); border-radius: 30px;
+        padding: 25px 18px 20px 18px; box-sizing: border-box;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.1);
         display: flex; flex-direction: column; gap: 15px;
-        border: 1px solid #333;
+        border: 1px solid #333; position: relative;
     }
 
-    @media (max-height: 700px) {
-        .calculator { border-radius: 0; border: none; padding: 10px; height: 100vh; max-height: none;}
-        .screen-container { height: 120px; }
+    /* Mobile Edge-to-Edge Optimization */
+    @media (max-width: 400px), (max-height: 700px) {
+        .calculator { 
+            border-radius: 0; border: none; padding: 15px 10px; 
+            height: 100vh; max-height: 100vh; max-width: 100vw;
+        }
+        .screen-container { height: 130px; }
     }
 
     .brand-row {
         display: flex; justify-content: space-between; align-items: center;
         color: white; padding: 0 5px;
     }
-    .brand { font-weight: 800; font-size: 15px; letter-spacing: 0.5px; }
+    .brand { font-weight: 800; font-size: 16px; letter-spacing: 0.5px; }
     .model { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;}
 
+    /* Screen Styles */
     .screen-container {
         background: var(--screen-bg); border-radius: 8px;
-        height: 140px; padding: 8px; position: relative;
-        box-shadow: inset 0 3px 8px rgba(0,0,0,0.4);
+        height: 150px; padding: 10px; position: relative;
+        box-shadow: inset 0 3px 10px rgba(0,0,0,0.5);
         display: flex; flex-direction: column; overflow: hidden;
     }
 
     .status-bar {
-        font-family: var(--font-screen); font-size: 11px; font-weight: bold;
+        font-family: var(--font-screen); font-size: 12px; font-weight: bold;
         display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1);
-        padding-bottom: 2px; margin-bottom: 4px; color: var(--text-dark);
+        padding-bottom: 3px; margin-bottom: 5px; color: var(--text-dark);
     }
     
-    /* Clickable Angle Toggle Button */
     .angle-toggle {
-        background: #b5c5b0; border: 1px solid #888; border-radius: 3px;
-        padding: 1px 6px; cursor: pointer; box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+        background: #b5c5b0; border: 1px solid #888; border-radius: 4px;
+        padding: 2px 8px; cursor: pointer; box-shadow: 0 1px 0 rgba(0,0,0,0.2);
         transition: background 0.1s;
     }
     .angle-toggle:active { background: #9dae98; box-shadow: none; transform: translateY(1px); }
@@ -75,21 +90,19 @@
         font-family: var(--font-screen); color: var(--text-dark); position: relative;
     }
 
-    .history { font-size: 13px; text-align: left; color: #444; min-height: 18px; white-space: pre-wrap; word-wrap: break-word;}
+    .history { font-size: 14px; text-align: left; color: #444; min-height: 20px; white-space: pre-wrap; word-wrap: break-word;}
     
     .input-line { 
-        font-size: 26px; display: block; white-space: nowrap; 
+        font-size: 28px; display: block; white-space: nowrap; 
         overflow-x: auto; overflow-y: hidden; scrollbar-width: none; 
         padding-top: 5px; cursor: text; line-height: 1.2;
         scroll-behavior: smooth;
     }
     .input-line::-webkit-scrollbar { display: none; }
-    .input-line span { 
-        padding: 0 1px; border-radius: 3px; transition: background 0.1s;
-    }
+    .input-line span { padding: 0 1px; border-radius: 3px; transition: background 0.1s; }
     .input-line span:active { background: rgba(0,0,0,0.2); }
     
-    .result { font-size: 30px; text-align: right; font-weight: bold; min-height: 35px;}
+    .result { font-size: 32px; text-align: right; font-weight: bold; min-height: 38px;}
     
     .cursor {
         display: inline-block; width: 8px; height: 3px;
@@ -98,33 +111,21 @@
     }
     @keyframes blink { 50% { opacity: 0; } }
 
-    .menu-overlay {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background: var(--screen-bg); z-index: 10; display: none;
-        flex-direction: column; padding: 5px; font-family: var(--font-screen);
-    }
-    .menu-title { text-align: center; font-weight: bold; font-size: 14px; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 5px;}
-    .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; flex: 1; }
-    .menu-item { 
-        border: 1px solid transparent; padding: 5px; font-size: 12px; 
-        display: flex; align-items: center; gap: 5px; cursor: pointer;
-    }
-    .menu-item.active { background: #000; color: #fff; border-radius: 3px; }
-
-    .keypad { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    /* Keypad Layout */
+    .keypad { display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: flex-end; margin-bottom: 10px;}
     .row { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
     
-    .dpad-container { display: flex; justify-content: center; position: relative; margin: 5px 0 15px 0; }
+    .dpad-container { display: flex; justify-content: center; position: relative; margin: 10px 0 20px 0; }
     .dpad {
-        display: grid; grid-template-columns: 35px 35px 35px; grid-template-rows: 30px 30px 30px;
+        display: grid; grid-template-columns: 38px 38px 38px; grid-template-rows: 32px 32px 32px;
         gap: 2px;
     }
     .dpad button { width: 100%; height: 100%; background: var(--key-dark); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
     .dpad .center { background: var(--key-mid); grid-column: 2; grid-row: 2; border-radius: 50%; box-shadow: 0 2px 0 #111;}
-    .dpad .up { grid-column: 2; grid-row: 1; border-radius: 5px 5px 0 0;}
-    .dpad .down { grid-column: 2; grid-row: 3; border-radius: 0 0 5px 5px;}
-    .dpad .left { grid-column: 1; grid-row: 2; border-radius: 5px 0 0 5px;}
-    .dpad .right { grid-column: 3; grid-row: 2; border-radius: 0 5px 5px 0;}
+    .dpad .up { grid-column: 2; grid-row: 1; border-radius: 6px 6px 0 0;}
+    .dpad .down { grid-column: 2; grid-row: 3; border-radius: 0 0 6px 6px;}
+    .dpad .left { grid-column: 1; grid-row: 2; border-radius: 6px 0 0 6px;}
+    .dpad .right { grid-column: 3; grid-row: 2; border-radius: 0 6px 6px 0;}
 
     button {
         border: none; cursor: pointer; color: var(--text-light);
@@ -137,36 +138,51 @@
     button:active { transform: scale(0.95); }
     
     .shift-label {
-        position: absolute; top: -18px; font-size: 10px;
+        position: absolute; top: -20px; font-size: 11px;
         color: var(--text-yellow); font-weight: bold; width: 100%; text-align: center;
     }
 
     .key-circle {
-        width: 42px; height: 42px; border-radius: 50%;
-        background: var(--key-dark); font-size: 16px; font-weight: 600;
-        box-shadow: 0 4px 0 #151515;
+        width: 46px; height: 46px; border-radius: 50%;
+        background: var(--key-dark); font-size: 18px; font-weight: 600;
+        box-shadow: 0 5px 0 #151515;
     }
     .key-pill {
-        width: 50px; height: 28px; border-radius: 14px;
-        background: var(--key-dark); font-size: 13px; font-weight: 500;
-        box-shadow: 0 3px 0 #151515; margin-top: 15px;
+        width: 54px; height: 32px; border-radius: 16px;
+        background: var(--key-dark); font-size: 14px; font-weight: 500;
+        box-shadow: 0 4px 0 #151515; margin-top: 18px;
     }
-    .key-num { background: var(--key-light); box-shadow: 0 4px 0 #333; font-size: 18px; }
+    .key-num { background: var(--key-light); box-shadow: 0 5px 0 #333; font-size: 20px; }
     
-    .key-shift { background: var(--key-shift); color: #fff; box-shadow: 0 4px 0 #9c8225; font-size: 11px; font-weight: bold;}
+    .key-shift { background: var(--key-shift); color: #fff; box-shadow: 0 4px 0 #9c8225; font-size: 12px; font-weight: bold;}
     
-    .key-ac { background: var(--key-ac); box-shadow: 0 4px 0 #000; font-size: 14px;}
-    .key-exe { background: #222; box-shadow: 0 4px 0 #000; border: 1px solid #444; }
+    .key-ac { background: var(--key-ac); box-shadow: 0 5px 0 #000; font-size: 16px;}
+    .key-exe { background: #222; box-shadow: 0 5px 0 #000; border: 1px solid #444; }
 
-    .nav-side-btn { width: 35px; height: 35px; border-radius: 50%; background: var(--key-dark); box-shadow: 0 3px 0 #111; font-size: 18px; position: absolute;}
-    .nav-left-btn { left: 20px; top: 25px; }
-    .nav-right-btn { right: 20px; top: 25px; font-size: 12px;}
+    .nav-side-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--key-dark); box-shadow: 0 4px 0 #111; font-size: 20px; position: absolute;}
+    .nav-left-btn { left: 20px; top: 28px; }
+    .nav-right-btn { right: 20px; top: 28px; font-size: 13px;}
 
-    .is-shifted .shift-label { text-shadow: 0 0 8px rgba(232, 198, 56, 0.8); }
+    .is-shifted .shift-label { text-shadow: 0 0 10px rgba(232, 198, 56, 0.9); }
+    
+    /* Menu Styling */
+    .menu-overlay {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: var(--screen-bg); z-index: 10; display: none;
+        flex-direction: column; padding: 8px; font-family: var(--font-screen);
+    }
+    .menu-title { text-align: center; font-weight: bold; font-size: 16px; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 8px;}
+    .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; }
+    .menu-item { 
+        border: 1px solid transparent; padding: 8px; font-size: 14px; 
+        display: flex; align-items: center; gap: 8px; cursor: pointer;
+    }
+    .menu-item.active { background: #000; color: #fff; border-radius: 4px; }
 </style>
 </head>
 <body>
 
+<div class="calc-wrapper">
 <div class="calculator">
     <div class="brand-row">
         <div class="brand">Scientific Calculator</div>
@@ -186,7 +202,6 @@
             <div class="input-line" id="input-line"></div>
             <div class="result" id="result"></div>
         </div>
-
         <div class="menu-overlay" id="menu-screen">
             <div class="menu-title">HOME</div>
             <div class="menu-grid" id="menu-grid"></div>
@@ -222,7 +237,7 @@
             <button class="key-pill" onclick="k(')')"><span class="shift-label">,</span> ) </button>
         </div>
 
-        <div class="row" style="margin-top: 10px;">
+        <div class="row" style="margin-top: 15px;">
             <button class="key-circle key-num" onclick="k('7')">7</button>
             <button class="key-circle key-num" onclick="k('8')">8</button>
             <button class="key-circle key-num" onclick="k('9')">9</button>
@@ -252,6 +267,7 @@
         </div>
     </div>
 </div>
+</div>
 
 <script>
     let expr = "";
@@ -259,22 +275,19 @@
     let isShifted = false;
     let menuOpen = false;
     let ans = 0;
-    
     let currentMode = 0; 
     let menuSelectionIndex = 0;
-    
-    // Engine State
     let isDeg = true; 
 
     const modes = [
-        { id: 0, name: "Calculate", icon: "➕", desc: "General Calc" },
-        { id: 1, name: "Complex", icon: "𝒊", desc: "Complex Calc" },
-        { id: 2, name: "Base-N", icon: "🔟", desc: "Base-N Calc" },
-        { id: 3, name: "Table", icon: "▦", desc: "Generate Table" }
+        { id: 0, name: "Calculate", icon: "➕" },
+        { id: 1, name: "Complex", icon: "𝒊" },
+        { id: 2, name: "Base-N", icon: "🔟" },
+        { id: 3, name: "Table", icon: "▦" }
     ];
 
     const parser = math.parser();
-    let mathContext = { Ans: 0, x: 0 };
+    let mathContext = { Ans: 0, x: 0, y: 0, t: 0 };
     
     const origSin = math.sin;
     const origCos = math.cos;
@@ -282,11 +295,12 @@
     const origAsin = math.asin;
     const origAcos = math.acos;
     const origAtan = math.atan;
+    const origArg = math.arg;
 
-    // Smart Trig Overrides (Checks Rad/Deg toggle instantly)
     function smartToRad(x) { return isDeg ? math.multiply(x, Math.PI / 180) : x; }
     function smartFromRad(x) { return isDeg ? math.multiply(x, 180 / Math.PI) : x; }
 
+    // Advanced Engineering Bindings
     math.import({
         sin: function(x) { return origSin(smartToRad(x)); },
         cos: function(x) { return origCos(smartToRad(x)); },
@@ -294,7 +308,14 @@
         asin: function(x) { return smartFromRad(origAsin(x)); },
         acos: function(x) { return smartFromRad(origAcos(x)); },
         atan: function(x) { return smartFromRad(origAtan(x)); },
-        polar: function(r, t) { return math.complex({r: r, phi: isDeg ? t * Math.PI / 180 : t}); }
+        arg: function(x) { return smartFromRad(origArg(x)); },
+        polar: function(r, t) { return math.complex({r: r, phi: isDeg ? t * Math.PI / 180 : t}); },
+        // Safely intercept Symbolic CAS requests to prevent crashes
+        laplace: function() { throw new Error("Requires Symbolic CAS"); },
+        ilaplace: function() { throw new Error("Requires Symbolic CAS"); },
+        fourier: function() { throw new Error("Requires Symbolic CAS"); },
+        ifourier: function() { throw new Error("Requires Symbolic CAS"); },
+        lim: function() { throw new Error("Requires Symbolic CAS"); }
     }, {override: true});
 
     const elInputLine = document.getElementById('input-line');
@@ -314,9 +335,9 @@
     function toggleAngleMode() {
         isDeg = !isDeg;
         elAngleInd.innerText = isDeg ? 'D' : 'R';
-        elResult.style.fontSize = "14px";
+        elResult.style.fontSize = "16px";
         elResult.innerText = isDeg ? "Degrees Mode" : "Radians Mode";
-        setTimeout(() => { elResult.style.fontSize = "30px"; elResult.innerText = ""; }, 1000);
+        setTimeout(() => { elResult.style.fontSize = "32px"; elResult.innerText = ""; }, 1000);
     }
 
     function render() {
@@ -395,14 +416,13 @@
             toggleShift();
         }
 
-        // Variable Storage (STO) Logic
         if (insertVal === 'STO') {
-            let valToStore = prompt(`Store current Answer (${ans}) into variable x?\nOr type a specific number:`, ans);
+            let valToStore = prompt(`Store Answer (${ans}) into variable x?\nOr type a specific number:`, ans);
             if(valToStore !== null) {
                 mathContext.x = parseFloat(valToStore) || 0;
-                elResult.style.fontSize = "14px";
+                elResult.style.fontSize = "16px";
                 elResult.innerText = `x = ${mathContext.x}`;
-                setTimeout(() => { elResult.style.fontSize = "30px"; elResult.innerText = ""; }, 2000);
+                setTimeout(() => { elResult.style.fontSize = "32px"; elResult.innerText = ""; }, 2000);
             }
             return;
         }
@@ -473,7 +493,6 @@
         render();
     }
 
-    // Deep-Space Precision Snap Engine
     function cleanPrecision(val) {
         const EPSILON = 1e-12;
         if (typeof val === 'number') {
@@ -512,9 +531,8 @@
         try {
             if(currentMode === 3) { runTableMode(); return; }
 
-            // Execute Math
             let rawRes = math.evaluate(evaluationExpr, mathContext);
-            let res = cleanPrecision(rawRes); // Apply Hardware-level precision snap
+            let res = cleanPrecision(rawRes); 
             
             let outStr = "";
             
@@ -523,7 +541,6 @@
                 else { outStr = math.format(res, {precision: 10, lowerExp: -9, upperExp: 9}); }
             } else if (res && res.isComplex) {
                 if(currentMode !== 1) throw new Error("Mode Error");
-                
                 let re = math.format(res.re, {precision: 8});
                 let im = math.format(Math.abs(res.im), {precision: 8});
                 let sign = res.im >= 0 ? "+" : "−";
@@ -531,9 +548,9 @@
                 if(res.im === 0) { outStr = `${re}`; }
                 else if(res.re === 0) { outStr = res.im < 0 ? `−${im}𝑖` : `${im}𝑖`; }
                 else { outStr = `${re} ${sign} ${im}𝑖`; }
-                
             } else if (res && res.entries) {
-                outStr = "[" + res.entries.join(", ") + "]";
+                // Matrix/Vector output formatting
+                outStr = "[" + res.entries.map(e => math.format(cleanPrecision(e), {precision: 5})).join(", ") + "]";
             } else {
                 outStr = res.toString();
             }
@@ -552,19 +569,17 @@
             
         } catch (err) {
             console.error(err);
-            if(err.message === "Mode Error") {
-                 showError("Mode ERROR: Use CMPLX");
-            } else {
-                 showError("Syntax/Math ERROR");
-            }
+            if(err.message === "Mode Error") { showError("Mode ERROR: Use CMPLX"); } 
+            else if(err.message === "Requires Symbolic CAS") { showError("Requires Symbolic CAS"); }
+            else { showError("Syntax/Math ERROR"); }
         }
         render();
     }
 
     function showError(msg) {
         elResult.innerText = msg;
-        elResult.style.fontSize = "18px";
-        setTimeout(() => { elResult.style.fontSize = "30px"; }, 2000);
+        elResult.style.fontSize = "16px";
+        setTimeout(() => { elResult.style.fontSize = "32px"; }, 2000);
     }
 
     function toggleMenu() {
@@ -579,7 +594,7 @@
         modes.forEach((m, idx) => {
             let div = document.createElement('div');
             div.className = `menu-item ${idx === menuSelectionIndex ? 'active' : ''}`;
-            div.innerHTML = `<span style="font-size:18px">${m.icon}</span> ${m.id+1}:${m.name}`;
+            div.innerHTML = `<span style="font-size:20px">${m.icon}</span> ${m.id+1}:${m.name}`;
             div.onclick = () => { menuSelectionIndex = idx; exe(); }
             elMenuGrid.appendChild(div);
         });
@@ -602,7 +617,7 @@
         let compiled = math.compile(fStr);
         for(let i=start; i<=end; i+=step) {
             let val = compiled.evaluate({x: i});
-            out += `x=${i} | f(x)=${math.format(val, {precision: 5})}\n`;
+            out += `x=${i} | f(x)=${math.format(cleanPrecision(val), {precision: 5})}\n`;
         }
         elHistory.innerText = out;
         elResult.innerText = "Table Generated";
@@ -615,7 +630,8 @@
             'ArrowLeft': () => navDpad('left'), 'ArrowRight': () => navDpad('right')
         };
         if (keyMap[e.key]) { e.preventDefault(); keyMap[e.key](); } 
-        else if (e.key.length === 1 && /[0-9+\-*/.()x^i,]/.test(e.key)) { k(e.key); }
+        // Allow typing matrix brackets and commas via hardware keyboard
+        else if (e.key.length === 1 && /[0-9+\-*/.()x^i,\[\]]/.test(e.key)) { k(e.key); }
     });
 
     init();
