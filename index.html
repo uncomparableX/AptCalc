@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Scientific Calculator by Apratim Das</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --calc-bg: #1c1d1f;
+        --screen-bg: #d4dfd0;
+        --key-dark: #292a2c;
+        --key-mid: #38393b;
+        --key-light: #4c4d50;
+        --key-shift: #dcb836;
+        --key-ac: #111;
+        --text-light: #f5f5f5;
+        --text-dark: #0a0a0a;
+        --text-yellow: #e8c638;
+        --font-screen: 'Share Tech Mono', monospace;
+    }
+
+    body {
+        margin: 0; background: #050505; display: flex;
+        justify-content: center; align-items: center; 
+        min-height: 100vh; font-family: 'Segoe UI', sans-serif; 
+        user-select: none; -webkit-user-select: none;
+    }
+
+    .calculator {
+        width: 100%; max-width: 360px; height: 100vh; max-height: 720px;
+        background: var(--calc-bg); border-radius: 25px;
+        padding: 20px 15px; box-sizing: border-box;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.1);
+        display: flex; flex-direction: column; gap: 15px;
+        border: 1px solid #333;
+    }
+
+    @media (max-height: 700px) {
+        .calculator { border-radius: 0; border: none; padding: 10px; height: 100vh; max-height: none;}
+        .screen-container { height: 120px; }
+    }
+
+    .brand-row {
+        display: flex; justify-content: space-between; align-items: center;
+        color: white; padding: 0 5px;
+    }
+    .brand { font-weight: 800; font-size: 15px; letter-spacing: 0.5px; }
+    .model { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;}
+
+    .screen-container {
+        background: var(--screen-bg); border-radius: 8px;
+        height: 140px; padding: 8px; position: relative;
+        box-shadow: inset 0 3px 8px rgba(0,0,0,0.4);
+        display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    .status-bar {
+        font-family: var(--font-screen); font-size: 11px; font-weight: bold;
+        display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1);
+        padding-bottom: 2px; margin-bottom: 4px; color: var(--text-dark);
+    }
+    
+    /* Clickable Angle Toggle Button */
+    .angle-toggle {
+        background: #b5c5b0; border: 1px solid #888; border-radius: 3px;
+        padding: 1px 6px; cursor: pointer; box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+        transition: background 0.1s;
+    }
+    .angle-toggle:active { background: #9dae98; box-shadow: none; transform: translateY(1px); }
+
+    .screen-content {
+        flex: 1; display: flex; flex-direction: column; justify-content: flex-end;
+        font-family: var(--font-screen); color: var(--text-dark); position: relative;
+    }
+
+    .history { font-size: 13px; text-align: left; color: #444; min-height: 18px; white-space: pre-wrap; word-wrap: break-word;}
+    
+    .input-line { 
+        font-size: 26px; display: block; white-space: nowrap; 
+        overflow-x: auto; overflow-y: hidden; scrollbar-width: none; 
+        padding-top: 5px; cursor: text; line-height: 1.2;
+        scroll-behavior: smooth;
+    }
+    .input-line::-webkit-scrollbar { display: none; }
+    .input-line span { 
+        padding: 0 1px; border-radius: 3px; transition: background 0.1s;
+    }
+    .input-line span:active { background: rgba(0,0,0,0.2); }
+    
+    .result { font-size: 30px; text-align: right; font-weight: bold; min-height: 35px;}
+    
+    .cursor {
+        display: inline-block; width: 8px; height: 3px;
+        background: var(--text-dark); margin-left: 1px;
+        animation: blink 1s infinite; vertical-align: bottom;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .menu-overlay {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: var(--screen-bg); z-index: 10; display: none;
+        flex-direction: column; padding: 5px; font-family: var(--font-screen);
+    }
+    .menu-title { text-align: center; font-weight: bold; font-size: 14px; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 5px;}
+    .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; flex: 1; }
+    .menu-item { 
+        border: 1px solid transparent; padding: 5px; font-size: 12px; 
+        display: flex; align-items: center; gap: 5px; cursor: pointer;
+    }
+    .menu-item.active { background: #000; color: #fff; border-radius: 3px; }
+
+    .keypad { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    .row { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
+    
+    .dpad-container { display: flex; justify-content: center; position: relative; margin: 5px 0 15px 0; }
+    .dpad {
+        display: grid; grid-template-columns: 35px 35px 35px; grid-template-rows: 30px 30px 30px;
+        gap: 2px;
+    }
+    .dpad button { width: 100%; height: 100%; background: var(--key-dark); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+    .dpad .center { background: var(--key-mid); grid-column: 2; grid-row: 2; border-radius: 50%; box-shadow: 0 2px 0 #111;}
+    .dpad .up { grid-column: 2; grid-row: 1; border-radius: 5px 5px 0 0;}
+    .dpad .down { grid-column: 2; grid-row: 3; border-radius: 0 0 5px 5px;}
+    .dpad .left { grid-column: 1; grid-row: 2; border-radius: 5px 0 0 5px;}
+    .dpad .right { grid-column: 3; grid-row: 2; border-radius: 0 5px 5px 0;}
+
+    button {
+        border: none; cursor: pointer; color: var(--text-light);
+        position: relative; transition: transform 0.05s;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        font-family: inherit; margin: 0; padding: 0;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    button:active { transform: scale(0.95); }
+    
+    .shift-label {
+        position: absolute; top: -18px; font-size: 10px;
+        color: var(--text-yellow); font-weight: bold; width: 100%; text-align: center;
+    }
+
+    .key-circle {
+        width: 42px; height: 42px; border-radius: 50%;
+        background: var(--key-dark); font-size: 16px; font-weight: 600;
+        box-shadow: 0 4px 0 #151515;
+    }
+    .key-pill {
+        width: 50px; height: 28px; border-radius: 14px;
+        background: var(--key-dark); font-size: 13px; font-weight: 500;
+        box-shadow: 0 3px 0 #151515; margin-top: 15px;
+    }
+    .key-num { background: var(--key-light); box-shadow: 0 4px 0 #333; font-size: 18px; }
+    
+    .key-shift { background: var(--key-shift); color: #fff; box-shadow: 0 4px 0 #9c8225; font-size: 11px; font-weight: bold;}
+    
+    .key-ac { background: var(--key-ac); box-shadow: 0 4px 0 #000; font-size: 14px;}
+    .key-exe { background: #222; box-shadow: 0 4px 0 #000; border: 1px solid #444; }
+
+    .nav-side-btn { width: 35px; height: 35px; border-radius: 50%; background: var(--key-dark); box-shadow: 0 3px 0 #111; font-size: 18px; position: absolute;}
+    .nav-left-btn { left: 20px; top: 25px; }
+    .nav-right-btn { right: 20px; top: 25px; font-size: 12px;}
+
+    .is-shifted .shift-label { text-shadow: 0 0 8px rgba(232, 198, 56, 0.8); }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+    <div class="brand-row">
+        <div class="brand">Scientific Calculator</div>
+        <div class="model">made with ❤️ by Apratim Das</div>
+    </div>
+
+    <div class="screen-container">
+        <div class="status-bar">
+            <div>
+                <span id="shift-ind" style="visibility:hidden">S</span>
+                <span id="mode-ind" style="margin-left: 5px;">Calculate</span>
+            </div>
+            <div class="angle-toggle" id="angle-ind" onclick="toggleAngleMode()" title="Click to Toggle Degrees/Radians">D</div>
+        </div>
+        <div class="screen-content" id="calc-screen">
+            <div class="history" id="history"></div>
+            <div class="input-line" id="input-line"></div>
+            <div class="result" id="result"></div>
+        </div>
+
+        <div class="menu-overlay" id="menu-screen">
+            <div class="menu-title">HOME</div>
+            <div class="menu-grid" id="menu-grid"></div>
+        </div>
+    </div>
+
+    <div class="keypad" id="keypad">
+        <div class="dpad-container">
+            <button class="nav-side-btn nav-left-btn key-shift" onclick="toggleShift()" id="btn-shift">SHIFT</button>
+            <div class="dpad">
+                <button class="up" onclick="navDpad('up')">▲</button>
+                <button class="left" onclick="navDpad('left')">◄</button>
+                <button class="center" onclick="exe()">OK</button>
+                <button class="right" onclick="navDpad('right')">►</button>
+                <button class="down" onclick="navDpad('down')">▼</button>
+            </div>
+            <button class="nav-side-btn nav-right-btn" onclick="toggleMenu()">⌂<br>HOME</button>
+        </div>
+
+        <div class="row">
+            <button class="key-pill" onclick="k('x')"><span class="shift-label">STO</span>𝑥</button>
+            <button class="key-pill" onclick="k('^2')"><span class="shift-label">√■</span>𝑥²</button>
+            <button class="key-pill" onclick="k('^')"><span class="shift-label">x√■</span>𝑥ⁿ</button>
+            <button class="key-pill" onclick="k('log10(')"><span class="shift-label">10^■</span>log</button>
+            <button class="key-pill" onclick="k('log(')"><span class="shift-label">e^■</span>ln</button>
+        </div>
+        <div class="row">
+            <button class="key-pill" onclick="k('i')"><span class="shift-label">∠</span>𝑖</button>
+            <button class="key-pill" onclick="k('sin(')"><span class="shift-label">sin⁻¹</span>sin</button>
+            <button class="key-pill" onclick="k('cos(')"><span class="shift-label">cos⁻¹</span>cos</button>
+            <button class="key-pill" onclick="k('tan(')"><span class="shift-label">tan⁻¹</span>tan</button>
+            <button class="key-pill" onclick="k('(')"><span class="shift-label">abs</span> ( </button>
+            <button class="key-pill" onclick="k(')')"><span class="shift-label">,</span> ) </button>
+        </div>
+
+        <div class="row" style="margin-top: 10px;">
+            <button class="key-circle key-num" onclick="k('7')">7</button>
+            <button class="key-circle key-num" onclick="k('8')">8</button>
+            <button class="key-circle key-num" onclick="k('9')">9</button>
+            <button class="key-circle key-ac" onclick="del()">DEL</button>
+            <button class="key-circle key-ac" onclick="ac()"><span class="shift-label">OFF</span>AC</button>
+        </div>
+        <div class="row">
+            <button class="key-circle key-num" onclick="k('4')">4</button>
+            <button class="key-circle key-num" onclick="k('5')">5</button>
+            <button class="key-circle key-num" onclick="k('6')">6</button>
+            <button class="key-circle" onclick="k('*')">×</button>
+            <button class="key-circle" onclick="k('/')">÷</button>
+        </div>
+        <div class="row">
+            <button class="key-circle key-num" onclick="k('1')">1</button>
+            <button class="key-circle key-num" onclick="k('2')">2</button>
+            <button class="key-circle key-num" onclick="k('3')">3</button>
+            <button class="key-circle" onclick="k('+')">+</button>
+            <button class="key-circle" onclick="k('-')">−</button>
+        </div>
+        <div class="row">
+            <button class="key-circle key-num" onclick="k('0')">0</button>
+            <button class="key-circle key-num" onclick="k('.')"><span class="shift-label">e</span>.</button>
+            <button class="key-circle" onclick="k('*10^')"><span class="shift-label">π</span>×10ⁿ</button>
+            <button class="key-circle" onclick="k('Ans')">Ans</button>
+            <button class="key-circle key-exe" onclick="exe()"><span class="shift-label">≈</span>EXE</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let expr = "";
+    let cursorPos = 0;
+    let isShifted = false;
+    let menuOpen = false;
+    let ans = 0;
+    
+    let currentMode = 0; 
+    let menuSelectionIndex = 0;
+    
+    // Engine State
+    let isDeg = true; 
+
+    const modes = [
+        { id: 0, name: "Calculate", icon: "➕", desc: "General Calc" },
+        { id: 1, name: "Complex", icon: "𝒊", desc: "Complex Calc" },
+        { id: 2, name: "Base-N", icon: "🔟", desc: "Base-N Calc" },
+        { id: 3, name: "Table", icon: "▦", desc: "Generate Table" }
+    ];
+
+    const parser = math.parser();
+    let mathContext = { Ans: 0, x: 0 };
+    
+    const origSin = math.sin;
+    const origCos = math.cos;
+    const origTan = math.tan;
+    const origAsin = math.asin;
+    const origAcos = math.acos;
+    const origAtan = math.atan;
+
+    // Smart Trig Overrides (Checks Rad/Deg toggle instantly)
+    function smartToRad(x) { return isDeg ? math.multiply(x, Math.PI / 180) : x; }
+    function smartFromRad(x) { return isDeg ? math.multiply(x, 180 / Math.PI) : x; }
+
+    math.import({
+        sin: function(x) { return origSin(smartToRad(x)); },
+        cos: function(x) { return origCos(smartToRad(x)); },
+        tan: function(x) { return origTan(smartToRad(x)); },
+        asin: function(x) { return smartFromRad(origAsin(x)); },
+        acos: function(x) { return smartFromRad(origAcos(x)); },
+        atan: function(x) { return smartFromRad(origAtan(x)); },
+        polar: function(r, t) { return math.complex({r: r, phi: isDeg ? t * Math.PI / 180 : t}); }
+    }, {override: true});
+
+    const elInputLine = document.getElementById('input-line');
+    const elHistory = document.getElementById('history');
+    const elResult = document.getElementById('result');
+    const elMenu = document.getElementById('menu-screen');
+    const elCalc = document.getElementById('calc-screen');
+    const elModeInd = document.getElementById('mode-ind');
+    const elMenuGrid = document.getElementById('menu-grid');
+    const elAngleInd = document.getElementById('angle-ind');
+
+    function init() {
+        renderMenu();
+        render();
+    }
+
+    function toggleAngleMode() {
+        isDeg = !isDeg;
+        elAngleInd.innerText = isDeg ? 'D' : 'R';
+        elResult.style.fontSize = "14px";
+        elResult.innerText = isDeg ? "Degrees Mode" : "Radians Mode";
+        setTimeout(() => { elResult.style.fontSize = "30px"; elResult.innerText = ""; }, 1000);
+    }
+
+    function render() {
+        if(menuOpen) return;
+        let displayHtml = "";
+        let i = 0;
+        
+        while(i <= expr.length) {
+            if (i === cursorPos) displayHtml += "<span id='cursor-span' class='cursor'></span>";
+            if (i === expr.length) break;
+
+            let chunk = expr[i];
+            let step = 1;
+
+            if (expr.startsWith("log10(", i)) { chunk = "log("; step = 6; }
+            else if (expr.startsWith("log(", i)) { chunk = "ln("; step = 4; }
+            else if (expr.startsWith("pi", i)) { chunk = "π"; step = 2; }
+            else if (expr.startsWith("sqrt(", i)) { chunk = "√("; step = 5; }
+            else if (expr.startsWith("x√(", i)) { chunk = "x√("; step = 3; }
+            else if (expr.startsWith("asin(", i)) { chunk = "sin⁻¹("; step = 5; }
+            else if (expr.startsWith("acos(", i)) { chunk = "cos⁻¹("; step = 5; }
+            else if (expr.startsWith("atan(", i)) { chunk = "tan⁻¹("; step = 5; }
+            else if (expr.startsWith("abs(", i)) { chunk = "abs("; step = 4; }
+            else if (expr.startsWith("conj(", i)) { chunk = "conj("; step = 5; }
+            else {
+                if (chunk === '*') chunk = '×';
+                if (chunk === '-') chunk = '−';
+            }
+
+            displayHtml += `<span onclick="setCursor(${i})">${chunk}</span>`;
+            i += step;
+        }
+        
+        displayHtml += `<span onclick="setCursor(${expr.length})" style="padding-right: 40px; color:transparent;">_</span>`;
+        elInputLine.innerHTML = displayHtml;
+        
+        setTimeout(() => {
+            const cursorEl = document.getElementById('cursor-span');
+            if (cursorEl && elInputLine) {
+                const cPos = cursorEl.offsetLeft;
+                const sLeft = elInputLine.scrollLeft;
+                const cWidth = elInputLine.clientWidth;
+                if (cPos < sLeft || cPos > sLeft + cWidth - 30) {
+                    elInputLine.scrollLeft = cPos - (cWidth / 2);
+                }
+            }
+        }, 0);
+    }
+
+    window.setCursor = function(pos) {
+        if(menuOpen) return;
+        cursorPos = pos;
+        render();
+    }
+
+    function toggleShift() {
+        isShifted = !isShifted;
+        document.body.classList.toggle('is-shifted', isShifted);
+        document.getElementById('shift-ind').style.visibility = isShifted ? 'visible' : 'hidden';
+    }
+
+    function k(val) {
+        if(menuOpen) { toggleMenu(); return; }
+        
+        let insertVal = val;
+        
+        if (isShifted) {
+            const shiftMap = {
+                'x': 'STO', '^2': 'sqrt(', '^': 'x√(', 
+                'log10(': '10^', 'log(': 'e^',
+                'sin(': 'asin(', 'cos(': 'acos(', 'tan(': 'atan(',
+                '(': 'abs(', ')': ',', 'i': '∠', 
+                '.': 'e', '*10^': 'pi'
+            };
+            insertVal = shiftMap[val] || val;
+            toggleShift();
+        }
+
+        // Variable Storage (STO) Logic
+        if (insertVal === 'STO') {
+            let valToStore = prompt(`Store current Answer (${ans}) into variable x?\nOr type a specific number:`, ans);
+            if(valToStore !== null) {
+                mathContext.x = parseFloat(valToStore) || 0;
+                elResult.style.fontSize = "14px";
+                elResult.innerText = `x = ${mathContext.x}`;
+                setTimeout(() => { elResult.style.fontSize = "30px"; elResult.innerText = ""; }, 2000);
+            }
+            return;
+        }
+
+        if((val === 'i' || insertVal === '∠') && currentMode !== 1) {
+            showError("Mode ERROR: Use CMPLX");
+            return;
+        }
+
+        if (expr === "" && ['+', '-', '*', '/', '^', '^2', 'x√(', '∠'].includes(insertVal)) {
+            insertVal = "Ans" + insertVal;
+        }
+
+        expr = expr.slice(0, cursorPos) + insertVal + expr.slice(cursorPos);
+        cursorPos += insertVal.length;
+        elResult.innerText = ""; 
+        render();
+    }
+
+    function del() {
+        if(menuOpen) return;
+        if (cursorPos > 0) {
+            let beforeCursor = expr.slice(0, cursorPos);
+            const funcList = ['log10(', 'log(', 'sin(', 'cos(', 'tan(', 'sqrt(', 'x√(', 'abs(', 'conj(', 'asin(', 'acos(', 'atan('];
+            let deletedFunc = false;
+            
+            for(let f of funcList) {
+                if(beforeCursor.endsWith(f)) {
+                    expr = expr.slice(0, cursorPos - f.length) + expr.slice(cursorPos);
+                    cursorPos -= f.length;
+                    deletedFunc = true;
+                    break;
+                }
+            }
+            if(!deletedFunc) {
+                expr = expr.slice(0, cursorPos - 1) + expr.slice(cursorPos);
+                cursorPos--;
+            }
+        }
+        elResult.innerText = "";
+        render();
+    }
+
+    function ac() {
+        if(menuOpen) return;
+        if (isShifted) {
+            elHistory.innerText = ""; elResult.innerText = "GOODBYE"; expr = ""; render();
+            setTimeout(() => { elResult.innerText = ""; toggleShift(); }, 1000);
+            return;
+        }
+        expr = ""; cursorPos = 0; 
+        elResult.innerText = "";
+        if(currentMode !== 3) elHistory.innerText = "";
+        render();
+    }
+
+    function navDpad(dir) {
+        if(menuOpen) {
+            if(dir === 'right') menuSelectionIndex = Math.min(modes.length - 1, menuSelectionIndex + 1);
+            if(dir === 'left') menuSelectionIndex = Math.max(0, menuSelectionIndex - 1);
+            if(dir === 'down') menuSelectionIndex = Math.min(modes.length - 1, menuSelectionIndex + 2);
+            if(dir === 'up') menuSelectionIndex = Math.max(0, menuSelectionIndex - 2);
+            renderMenu();
+            return;
+        }
+        if (dir === 'left') cursorPos = Math.max(0, cursorPos - 1);
+        if (dir === 'right') cursorPos = Math.min(expr.length, cursorPos + 1);
+        render();
+    }
+
+    // Deep-Space Precision Snap Engine
+    function cleanPrecision(val) {
+        const EPSILON = 1e-12;
+        if (typeof val === 'number') {
+            if (Math.abs(val) < EPSILON) return 0;
+            if (Math.abs(val - Math.round(val)) < EPSILON) return Math.round(val);
+            return val;
+        }
+        if (val && val.isComplex) {
+            val.re = cleanPrecision(val.re);
+            val.im = cleanPrecision(val.im);
+            if(val.re === 0 && val.im === 0) return 0;
+        }
+        return val;
+    }
+
+    function exe() {
+        if(menuOpen) {
+            setMode(menuSelectionIndex);
+            toggleMenu();
+            return;
+        }
+        
+        if (!expr && currentMode !== 3) return;
+
+        elHistory.innerText = expr.replace(/\*/g, '×').replace(/-/g, '−').replace(/log10\(/g, 'log(').replace(/log\(/g, 'ln(').replace(/pi/g, 'π');
+        
+        let evaluationExpr = expr.replace(/×/g, '*').replace(/−/g, '-').replace(/π/g, 'pi');
+        
+        let openP = (evaluationExpr.match(/\(/g) || []).length;
+        let closeP = (evaluationExpr.match(/\)/g) || []).length;
+        for(let i=0; i < openP - closeP; i++) evaluationExpr += ')';
+
+        evaluationExpr = evaluationExpr.replace(/([0-9.]+|Ans)\s*x√\(([^)]+)\)/g, 'nthRoot($2, $1)');
+        evaluationExpr = evaluationExpr.replace(/((?:\([^)]+\))|[0-9.]+|Ans)\s*∠\s*((?:\([^)]+\))|[+\-]?[0-9.]+)/g, 'polar($1, $2)');
+
+        try {
+            if(currentMode === 3) { runTableMode(); return; }
+
+            // Execute Math
+            let rawRes = math.evaluate(evaluationExpr, mathContext);
+            let res = cleanPrecision(rawRes); // Apply Hardware-level precision snap
+            
+            let outStr = "";
+            
+            if (typeof res === 'number') {
+                if(!isFinite(res)) { outStr = "Infinity"; }
+                else { outStr = math.format(res, {precision: 10, lowerExp: -9, upperExp: 9}); }
+            } else if (res && res.isComplex) {
+                if(currentMode !== 1) throw new Error("Mode Error");
+                
+                let re = math.format(res.re, {precision: 8});
+                let im = math.format(Math.abs(res.im), {precision: 8});
+                let sign = res.im >= 0 ? "+" : "−";
+                
+                if(res.im === 0) { outStr = `${re}`; }
+                else if(res.re === 0) { outStr = res.im < 0 ? `−${im}𝑖` : `${im}𝑖`; }
+                else { outStr = `${re} ${sign} ${im}𝑖`; }
+                
+            } else if (res && res.entries) {
+                outStr = "[" + res.entries.join(", ") + "]";
+            } else {
+                outStr = res.toString();
+            }
+            
+            if(currentMode === 2) {
+                let num = Math.floor(Number(res));
+                if(isNaN(num)) throw new Error("Base Error");
+                elHistory.innerHTML = `DEC: ${num}<br>HEX: ${num.toString(16).toUpperCase()}<br>BIN: ${num.toString(2)}<br>OCT: ${num.toString(8)}`;
+                outStr = num;
+            }
+
+            ans = res;
+            mathContext.Ans = ans;
+            elResult.innerText = outStr;
+            expr = ""; cursorPos = 0; 
+            
+        } catch (err) {
+            console.error(err);
+            if(err.message === "Mode Error") {
+                 showError("Mode ERROR: Use CMPLX");
+            } else {
+                 showError("Syntax/Math ERROR");
+            }
+        }
+        render();
+    }
+
+    function showError(msg) {
+        elResult.innerText = msg;
+        elResult.style.fontSize = "18px";
+        setTimeout(() => { elResult.style.fontSize = "30px"; }, 2000);
+    }
+
+    function toggleMenu() {
+        menuOpen = !menuOpen;
+        elMenu.style.display = menuOpen ? 'flex' : 'none';
+        elCalc.style.display = menuOpen ? 'none' : 'flex';
+        if(menuOpen) renderMenu();
+    }
+
+    function renderMenu() {
+        elMenuGrid.innerHTML = "";
+        modes.forEach((m, idx) => {
+            let div = document.createElement('div');
+            div.className = `menu-item ${idx === menuSelectionIndex ? 'active' : ''}`;
+            div.innerHTML = `<span style="font-size:18px">${m.icon}</span> ${m.id+1}:${m.name}`;
+            div.onclick = () => { menuSelectionIndex = idx; exe(); }
+            elMenuGrid.appendChild(div);
+        });
+    }
+
+    function setMode(modeId) {
+        currentMode = modeId;
+        elModeInd.innerText = modes[modeId].name;
+        ac();
+    }
+
+    function runTableMode() {
+        let fStr = prompt("Table Mode: Enter f(x) [e.g., x^2 + 2x]", "x^2");
+        if(!fStr) return;
+        let start = parseFloat(prompt("Start Value?", "1"));
+        let end = parseFloat(prompt("End Value?", "5"));
+        let step = parseFloat(prompt("Step?", "1"));
+        
+        let out = `f(x) = ${fStr}\n`;
+        let compiled = math.compile(fStr);
+        for(let i=start; i<=end; i+=step) {
+            let val = compiled.evaluate({x: i});
+            out += `x=${i} | f(x)=${math.format(val, {precision: 5})}\n`;
+        }
+        elHistory.innerText = out;
+        elResult.innerText = "Table Generated";
+    }
+
+    window.addEventListener('keydown', e => {
+        if(menuOpen) return;
+        const keyMap = {
+            'Enter': exe, 'Backspace': del, 'Escape': ac,
+            'ArrowLeft': () => navDpad('left'), 'ArrowRight': () => navDpad('right')
+        };
+        if (keyMap[e.key]) { e.preventDefault(); keyMap[e.key](); } 
+        else if (e.key.length === 1 && /[0-9+\-*/.()x^i,]/.test(e.key)) { k(e.key); }
+    });
+
+    init();
+</script>
+</body>
+</html>
