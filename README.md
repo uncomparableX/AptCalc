@@ -1,6 +1,6 @@
 # 🧮 Ultimate Scientific Calculator (AptCalc)
 
-Hey there! Welcome to the **Ultimate Scientific Calculator, AptCalc**, a powerful, browser-based engineering calculator made with ❤️ by me, ie: **Apratim Das**. 
+Hey there! Welcome to the **Ultimate Scientific Calculator, AptCalc**, a powerful, browser-based engineering calculator made with ❤️ by me, ie: **Apratim Das** , a 2nd year BTech student of IIT Dharwad pursuing EEE.
 
 I built this project to bridge the gap between simple web calculators and the physical, heavy-duty calculators engineering students use every day. Inspired by the sleek interface of the **Casio ClassWiz fx-991CW**, this calculator is a pure numerical beast capable of handling complex phasors, matrices, base-N conversions, and advanced trigonometry right in your browser.
 
